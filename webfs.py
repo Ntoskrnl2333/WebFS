@@ -110,8 +110,7 @@ class CustomHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_PATCH(self):
         self.handle_request('PATCH')
     
-    def do_MKCOL(self):
-        self.handle_request('MKCOL')
+
     
     def do_DELETE(self):
         self.handle_request('DELETE')
@@ -227,31 +226,61 @@ class CustomHTTPRequestHandler(BaseHTTPRequestHandler):
             self.send_error(500, f"Save failed: {str(e)}")
     
     def handle_put(self, full_path, query_params):
-        """Handle PUT requests (rename file)"""
-        if not os.path.exists(full_path):
-            self.send_error(404, "Source file not found")
-            return
-        
-        name = query_params.get('name', [None])[0]
-        if not name:
-            self.send_error(400, "name parameter required")
-            return
-        
-        # Prevent directory traversal in filename
-        if '/' in name or '\\' in name:
-            self.send_error(400, "Invalid filename")
-            return
-        
-        dir_path = os.path.dirname(full_path)
-        new_path = os.path.join(dir_path, name)
-        
-        try:
-            os.rename(full_path, new_path)
-            self.send_response(200)
-            self.send_header("Content-Length", "0")
-            self.end_headers()
-        except Exception as e:
-            self.send_error(500, f"Rename failed: {str(e)}")
+        """Handle PUT requests (rename file or create directory)"""
+        # Check if mkdir parameter is present to create directory
+        mkdir_param = query_params.get('mkdir', [None])[0]
+        if mkdir_param:
+            # Create directory
+            if not os.path.isdir(full_path):
+                self.send_error(404, "Parent directory not found")
+                return
+            
+            name = query_params.get('name', [None])[0]
+            if not name:
+                self.send_error(400, "name parameter required for mkdir")
+                return
+            
+            # Prevent directory traversal in directory name
+            if '/' in name or '\\' in name:
+                self.send_error(400, "Invalid directory name")
+                return
+            
+            new_dir = os.path.join(full_path, name)
+            try:
+                os.mkdir(new_dir)
+                self.send_response(201)
+                self.send_header("Content-Length", "0")
+                self.end_headers()
+            except FileExistsError:
+                self.send_error(409, "Directory already exists")
+            except Exception as e:
+                self.send_error(500, f"Creation failed: {str(e)}")
+        else:
+            # Rename operation
+            if not os.path.exists(full_path):
+                self.send_error(404, "Source file not found")
+                return
+            
+            name = query_params.get('name', [None])[0]
+            if not name:
+                self.send_error(400, "name parameter required for rename")
+                return
+            
+            # Prevent directory traversal in filename
+            if '/' in name or '\\' in name:
+                self.send_error(400, "Invalid filename")
+                return
+            
+            dir_path = os.path.dirname(full_path)
+            new_path = os.path.join(dir_path, name)
+            
+            try:
+                os.rename(full_path, new_path)
+                self.send_response(200)
+                self.send_header("Content-Length", "0")
+                self.end_headers()
+            except Exception as e:
+                self.send_error(500, f"Rename failed: {str(e)}")
     
     def handle_patch(self, full_path, query_params):
         """Handle PATCH requests (modify file)"""
@@ -281,33 +310,6 @@ class CustomHTTPRequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
         except Exception as e:
             self.send_error(500, f"Modification failed: {str(e)}")
-    
-    def handle_mkcol(self, full_path, query_params):
-        """Handle MKCOL requests (create directory)"""
-        if not os.path.isdir(full_path):
-            self.send_error(404, "Parent directory not found")
-            return
-        
-        name = query_params.get('name', [None])[0]
-        if not name:
-            self.send_error(400, "name parameter required")
-            return
-        
-        # Prevent directory traversal in directory name
-        if '/' in name or '\\' in name:
-            self.send_error(400, "Invalid directory name")
-            return
-        
-        new_dir = os.path.join(full_path, name)
-        try:
-            os.mkdir(new_dir)
-            self.send_response(201)
-            self.send_header("Content-Length", "0")
-            self.end_headers()
-        except FileExistsError:
-            self.send_error(409, "Directory already exists")
-        except Exception as e:
-            self.send_error(500, f"Creation failed: {str(e)}")
     
     def handle_delete(self, full_path):
         """Handle DELETE requests (delete file/directory)"""

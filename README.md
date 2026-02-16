@@ -86,14 +86,25 @@ curl -X POST --data-binary "@file.bin" http://server:23542/upload_dir?name=newfi
 
 #### `PUT` Request
 **Behavior**:
-- **Must** include `name` parameter for file renaming
-- Only allows renaming (doesn't permit directory movement)
-- Strictly validates new filename contains no path separators
-- Returns 200 OK on success
+- **File Renaming**: If request includes `name` parameter but no `mkdir` parameter:
+  - **Must** include `name` parameter for file renaming
+  - Only allows renaming (doesn't permit directory movement)
+  - Strictly validates new filename contains no path separators
+  - Returns 200 OK on success
+- **Directory Creation**: If request includes both `name` and `mkdir` parameters:
+  - Creates subdirectory under **existing directory**
+  - **Must** include `name` parameter specifying directory name
+  - Strictly validates directory name contains no path separators
+  - Prohibits recursive multi-level directory creation
+  - Returns 201 Created on success
 
-**Example**:
+**Examples**:
 ```bash
+# File renaming
 curl -X PUT "http://server:23542/oldname?name=newname"
+
+# Directory creation
+curl -X PUT "http://server:23542/parent_dir?name=new_subdir&mkdir=1"
 ```
 
 #### `PATCH` Request
@@ -107,19 +118,6 @@ curl -X PUT "http://server:23542/oldname?name=newname"
 **Example**:
 ```bash
 curl -X PATCH -H "Range: bytes=100-199" --data-binary "@patch.bin" http://server:23542/file.bin
-```
-
-#### `MKCOL` Request
-**Behavior**:
-- Creates subdirectory under **existing directory**
-- **Must** include `name` parameter specifying directory name
-- Strictly validates directory name contains no path separators
-- Prohibits recursive multi-level directory creation
-- Returns 201 Created on success
-
-**Example**:
-```bash
-curl -X MKCOL "http://server:23542/parent_dir?name=new_subdir"
 ```
 
 #### `DELETE` Request
@@ -222,9 +220,9 @@ Content-Range: bytes 100-199/10240
 Content-Length: 100
 ```
 
-### 8.3 Directory Creation (MKCOL)
+### 8.3 Directory Creation (PUT)
 ```bash
-curl -X MKCOL "http://localhost:23542/?name=assets"
+curl -X PUT "http://localhost:23542/?name=assets&mkdir=1"
 ```
 **Response**: `HTTP/1.0 201 Created`
 
