@@ -120,11 +120,6 @@ curl -X PUT "http://server:23542/parent_dir?name=new_subdir&mkdir=1"
 curl -X PATCH -H "Range: bytes=100-199" --data-binary "@patch.bin" http://server:23542/file.bin
 ```
 
-#### `MKCOL` Request
-**Behavior**:
-- **Deprecated**: Use `PUT` with `mkdir` parameter instead
-- Returns 405 Method Not Allowed with instruction to use PUT method
-
 #### `DELETE` Request
 **Behavior**:
 - Recursively deletes directories (including all contents)
