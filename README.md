@@ -235,4 +235,4 @@ curl -X PUT "http://localhost:23542/?name=assets&mkdir=1"
 
 ---
 
-**Final Reminder**: This software and this document(except this line) was fully designed by Qwen3-Max and it's published with the Unlicense.
+**Final Reminder**: This software and this document(except this line and some small edits) was fully designed by Qwen and it's published with the Unlicense.
