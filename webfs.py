@@ -311,10 +311,6 @@ class CustomHTTPRequestHandler(BaseHTTPRequestHandler):
         except Exception as e:
             self.send_error(500, f"Modification failed: {str(e)}")
     
-    def handle_mkcol(self, full_path, query_params):
-        """Handle MKCOL requests (create directory)"""
-        self.send_error(405, "Method Not Allowed - Use PUT with mkdir parameter instead")
-    
     def handle_delete(self, full_path):
         """Handle DELETE requests (delete file/directory)"""
         if not os.path.exists(full_path):
