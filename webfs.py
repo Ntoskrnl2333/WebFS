@@ -124,14 +124,13 @@ class CustomHTTPRequestHandler(BaseHTTPRequestHandler):
             # Handle different HTTP methods
             if method in ('GET', 'HEAD'):
                 self.handle_get_head(full_path, rel_path, query_params, method)
+            
             elif method == 'POST':
                 self.handle_post(full_path, query_params)
             elif method == 'PUT':
                 self.handle_put(full_path, query_params)
             elif method == 'PATCH':
                 self.handle_patch(full_path, query_params)
-            elif method == 'MKCOL':
-                self.handle_mkcol(full_path, query_params)
             elif method == 'DELETE':
                 self.handle_delete(full_path)
             else:
@@ -159,6 +158,7 @@ class CustomHTTPRequestHandler(BaseHTTPRequestHandler):
             
             # Set response headers
             self.send_response(206 if (start > 0 or end is not None) else 200)
+            self.send_header("Access-Control-Allow-Origin", "*")
             self.send_header("Content-Type", "application/octet-stream")
             self.send_header("Content-Length", str(end - start + 1 if end is not None else file_size - start))
             
@@ -218,6 +218,7 @@ class CustomHTTPRequestHandler(BaseHTTPRequestHandler):
                     content_length -= len(chunk)
             
             self.send_response(201)
+            self.send_header("Access-Control-Allow-Origin", "*")
             self.send_header("Content-Length", "0")
             self.end_headers()
         except Exception as e:
@@ -247,6 +248,7 @@ class CustomHTTPRequestHandler(BaseHTTPRequestHandler):
             try:
                 os.mkdir(new_dir)
                 self.send_response(201)
+                self.send_header("Access-Control-Allow-Origin", "*")
                 self.send_header("Content-Length", "0")
                 self.end_headers()
             except FileExistsError:
@@ -275,6 +277,7 @@ class CustomHTTPRequestHandler(BaseHTTPRequestHandler):
             try:
                 os.rename(full_path, new_path)
                 self.send_response(200)
+                self.send_header("Access-Control-Allow-Origin", "*")
                 self.send_header("Content-Length", "0")
                 self.end_headers()
             except Exception as e:
@@ -362,6 +365,7 @@ class CustomHTTPRequestHandler(BaseHTTPRequestHandler):
             content = "\n".join(dir_content).encode('utf-8')
             
             self.send_response(200)
+            self.send_header("Access-Control-Allow-Origin", "*")
             self.send_header("Content-Type", "text/plain; charset=utf-8")
             self.send_header("Content-Length", str(len(content)))
             self.end_headers()
