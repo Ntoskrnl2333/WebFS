@@ -110,6 +110,14 @@ class CustomHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_PATCH(self):
         self.handle_request('PATCH')
     
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Range")
+        self.send_header("Access-Control-Max-Age", "86400")
+        self.end_headers()
+    
     def do_DELETE(self):
         self.handle_request('DELETE')
     
