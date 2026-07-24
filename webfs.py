@@ -110,8 +110,6 @@ class CustomHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_PATCH(self):
         self.handle_request('PATCH')
     
-
-    
     def do_DELETE(self):
         self.handle_request('DELETE')
     
